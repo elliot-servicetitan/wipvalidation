@@ -1,0 +1,731 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Project Summary 3 Diff — ServiceTitan WIP Tools</title>
+  <style>
+    :root {
+      --bg: #f3f6fb;
+      --panel: #fff;
+      --text: #1f2937;
+      --muted: #64748b;
+      --border: #cbd5e1;
+      --accent: #2563eb;
+      --good-bg: #ecfdf5;
+      --good-border: #a7f3d0;
+      --good-text: #065f46;
+      --warn-bg: #fff7ed;
+      --warn-border: #fdba74;
+      --warn-text: #9a3412;
+      --bad-bg: #fef2f2;
+      --bad-border: #fecaca;
+      --bad-text: #991b1b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .topbar {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .topbar a {
+      font-size: 0.88rem;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .topbar a:hover { text-decoration: underline; }
+
+    .topbar-divider {
+      color: var(--border);
+      font-size: 1rem;
+    }
+
+    .topbar-title {
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .container {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    h1, h2, h3, h4 { margin: 0; }
+    p { margin: 0; color: var(--muted); }
+
+    .upload-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 12px;
+    }
+
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+      background: #f8fafc;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .drop-zone.dragover {
+      border-color: var(--accent);
+      background: #eff6ff;
+    }
+
+    .drop-zone input { display: none; }
+
+    .file-status {
+      margin-top: 8px;
+      font-size: 0.9rem;
+      word-break: break-all;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    button {
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      border-radius: 8px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    button.active {
+      background: #e2e8f0;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .pill {
+      display: inline-flex;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .pill.good {
+      background: var(--good-bg);
+      border-color: var(--good-border);
+      color: var(--good-text);
+    }
+
+    .pill.warn {
+      background: var(--warn-bg);
+      border-color: var(--warn-border);
+      color: var(--warn-text);
+    }
+
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .overview-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      background: #f8fafc;
+    }
+
+    .overview-card.good {
+      background: var(--good-bg);
+      border-color: var(--good-border);
+    }
+
+    .overview-card.bad {
+      background: var(--bad-bg);
+      border-color: var(--bad-border);
+    }
+
+    .overview-card h4 {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .overview-card .metric {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .overview-card.good .metric { color: var(--good-text); }
+    .overview-card.bad .metric { color: var(--bad-text); }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .panel.hidden { display: none; }
+
+    .filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      max-height: 70vh;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 1600px;
+    }
+
+    th, td {
+      border-right: 1px solid #e2e8f0;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 8px;
+      font-size: 0.88rem;
+      text-align: left;
+      vertical-align: top;
+      white-space: nowrap;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: #f8fafc;
+      z-index: 2;
+    }
+
+    tr.diff-row { background: #fff7ed; }
+    tr.match-row { background: #f8fafc; }
+    tr.presence-row { background: #fef2f2; }
+
+    .empty-msg {
+      color: var(--muted);
+      font-style: italic;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <nav class="topbar">
+    <a href="../">← All Tools</a>
+    <span class="topbar-divider">/</span>
+    <span class="topbar-title">Project Summary 3 Diff</span>
+  </nav>
+
+  <main class="container">
+    <section class="card">
+      <h1>Project Summary 3 — Cost Diff</h1>
+      <p>Upload two reports with these columns: ProjectId, TD Total Cost, TD Vendor Bill Cost, TD Labor Cost, TD Burden Cost, TD Invoice Equipment Cost, TD Invoice Material Cost, TD Payroll Adjustments, TD Vendor Return.</p>
+    </section>
+
+    <section class="card upload-grid">
+      <label class="drop-zone" id="old-zone">
+        <h3>Old Report</h3>
+        <p>Drag/drop .xlsx or click to browse</p>
+        <input type="file" id="old-file" accept=".xlsx,.xls" />
+        <p id="old-status" class="file-status">No file selected.</p>
+      </label>
+
+      <label class="drop-zone" id="new-zone">
+        <h3>New Report</h3>
+        <p>Drag/drop .xlsx or click to browse</p>
+        <input type="file" id="new-file" accept=".xlsx,.xls" />
+        <p id="new-status" class="file-status">No file selected.</p>
+      </label>
+    </section>
+
+    <section class="card controls">
+      <button id="run-diff" class="primary" disabled>Generate Diff Report</button>
+      <button id="download-csv" disabled>Download CSV</button>
+      <button id="download-xlsx" disabled>Download XLSX</button>
+      <span id="summary" class="pill">Waiting for files</span>
+    </section>
+
+    <section class="card">
+      <h2>High-Level Overview</h2>
+      <p>Clear counts for ProjectId matching and cost differences.</p>
+      <div id="overview-grid" class="overview-grid"></div>
+      <p id="overview-empty" class="empty-msg">Run a diff to see overview metrics.</p>
+    </section>
+
+    <section class="card">
+      <div class="tabs">
+        <button id="tab-data" class="active">Diff Data</button>
+        <button id="tab-presence">ProjectId Presence Mismatches</button>
+      </div>
+
+      <section id="panel-data" class="panel">
+        <div class="filters">
+          <button id="filter-all" class="active">All</button>
+          <button id="filter-diffs-only">Diffs Only</button>
+        </div>
+        <div class="table-wrap">
+          <table id="diff-table"><thead></thead><tbody></tbody></table>
+        </div>
+      </section>
+
+      <section id="panel-presence" class="panel hidden">
+        <div class="table-wrap">
+          <table id="presence-table"><thead></thead><tbody></tbody></table>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <script>
+    const EXPECTED_COLUMNS = [
+      'ProjectId',
+      'TD Total Cost',
+      'TD Vendor Bill Cost',
+      'TD Labor Cost',
+      'TD Burden Cost',
+      'TD Invoice Equipment Cost',
+      'TD Invoice Material Cost',
+      'TD Payroll Adjustments',
+      'TD Vendor Return'
+    ];
+
+    const COST_COLUMNS = EXPECTED_COLUMNS.slice(1);
+
+    const state = {
+      oldFile: null,
+      newFile: null,
+      diffRows: [],
+      presenceRows: [],
+      exportHeaders: [],
+      filter: 'all',
+      overview: null
+    };
+
+    const oldInput = document.getElementById('old-file');
+    const newInput = document.getElementById('new-file');
+    const oldStatus = document.getElementById('old-status');
+    const newStatus = document.getElementById('new-status');
+    const runDiffBtn = document.getElementById('run-diff');
+    const downloadCsvBtn = document.getElementById('download-csv');
+    const downloadXlsxBtn = document.getElementById('download-xlsx');
+    const summaryPill = document.getElementById('summary');
+
+    const overviewGrid = document.getElementById('overview-grid');
+    const overviewEmpty = document.getElementById('overview-empty');
+
+    const diffHead = document.querySelector('#diff-table thead');
+    const diffBody = document.querySelector('#diff-table tbody');
+    const presenceHead = document.querySelector('#presence-table thead');
+    const presenceBody = document.querySelector('#presence-table tbody');
+
+    const tabData = document.getElementById('tab-data');
+    const tabPresence = document.getElementById('tab-presence');
+    const panelData = document.getElementById('panel-data');
+    const panelPresence = document.getElementById('panel-presence');
+
+    const filterAll = document.getElementById('filter-all');
+    const filterDiffsOnly = document.getElementById('filter-diffs-only');
+
+    const setSummary = (text, kind = '') => {
+      summaryPill.textContent = text;
+      summaryPill.className = `pill ${kind}`.trim();
+    };
+
+    const normalizeHeader = header => String(header ?? '').replace(/\s+/g, ' ').trim().toLowerCase();
+
+    const toNumber = value => {
+      if (value === null || value === undefined || value === '') return null;
+      if (typeof value === 'number') return value;
+      const parsed = Number(String(value).replace(/[$,%\s,]/g, ''));
+      return Number.isFinite(parsed) ? parsed : null;
+    };
+
+    const formatCell = value => (value === null || value === undefined ? '' : String(value));
+
+    const readWorkbookRows = async file => {
+      const buffer = await file.arrayBuffer();
+      const wb = XLSX.read(buffer, { type: 'array', cellDates: false });
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      return XLSX.utils.sheet_to_json(sheet, { defval: null });
+    };
+
+    const mapColumns = rows => {
+      if (!rows.length) throw new Error('Report has no data rows.');
+      const rawHeaders = Object.keys(rows[0]);
+      const index = new Map(rawHeaders.map(h => [normalizeHeader(h), h]));
+
+      const mapping = {};
+      for (const expected of EXPECTED_COLUMNS) {
+        const raw = index.get(normalizeHeader(expected));
+        if (!raw) throw new Error(`Missing required column: ${expected}`);
+        mapping[expected] = raw;
+      }
+      return mapping;
+    };
+
+    const buildDataModel = (oldRows, newRows) => {
+      const oldMapCols = mapColumns(oldRows);
+      const newMapCols = mapColumns(newRows);
+
+      const oldByProject = new Map(oldRows.map(row => [String(row[oldMapCols.ProjectId] ?? '').trim(), row]));
+      const newByProject = new Map(newRows.map(row => [String(row[newMapCols.ProjectId] ?? '').trim(), row]));
+      oldByProject.delete('');
+      newByProject.delete('');
+
+      const allProjectIds = [...new Set([...oldByProject.keys(), ...newByProject.keys()])].sort((a, b) => a.localeCompare(b));
+
+      const diffCountByColumn = Object.fromEntries(COST_COLUMNS.map(col => [col, 0]));
+      const presenceRows = [];
+      const diffRows = [];
+
+      let matchingProjectIds = 0;
+      let missingInOld = 0;
+      let missingInNew = 0;
+
+      for (const projectId of allProjectIds) {
+        const oldRow = oldByProject.get(projectId);
+        const newRow = newByProject.get(projectId);
+
+        if (!oldRow || !newRow) {
+          if (!oldRow) {
+            missingInOld += 1;
+            presenceRows.push({ ProjectId: projectId, Presence: 'Missing in Old Report' });
+          } else {
+            missingInNew += 1;
+            presenceRows.push({ ProjectId: projectId, Presence: 'Missing in New Report' });
+          }
+          continue;
+        }
+
+        matchingProjectIds += 1;
+
+        const out = { ProjectId: projectId };
+        let rowHasDiff = false;
+
+        for (const col of COST_COLUMNS) {
+          const oldVal = oldRow[oldMapCols[col]];
+          const newVal = newRow[newMapCols[col]];
+          const oldNum = toNumber(oldVal);
+          const newNum = toNumber(newVal);
+
+          out[`${col} (Old)`] = formatCell(oldVal);
+          out[`${col} (New)`] = formatCell(newVal);
+
+          let diffValue = '';
+          let hasDiff = false;
+
+          if (oldNum !== null && newNum !== null) {
+            diffValue = newNum - oldNum;
+            hasDiff = diffValue !== 0;
+          } else {
+            diffValue = oldVal === newVal ? '' : `${formatCell(oldVal)} → ${formatCell(newVal)}`;
+            hasDiff = oldVal !== newVal;
+          }
+
+          out[`${col} (Diff)`] = diffValue;
+          if (hasDiff) {
+            diffCountByColumn[col] += 1;
+            rowHasDiff = true;
+          }
+        }
+
+        out['Diff Found'] = rowHasDiff ? 'Yes' : 'No';
+        diffRows.push(out);
+      }
+
+      const overview = {
+        matchingProjectIds,
+        missingInOld,
+        missingInNew,
+        allProjectIdsFoundInBoth: missingInOld === 0 && missingInNew === 0,
+        diffCountByColumn
+      };
+
+      const exportHeaders = ['ProjectId', ...COST_COLUMNS.flatMap(col => [`${col} (Old)`, `${col} (New)`, `${col} (Diff)`]), 'Diff Found'];
+      return { diffRows, presenceRows, overview, exportHeaders };
+    };
+
+    const renderOverview = overview => {
+      overviewGrid.innerHTML = '';
+      overviewEmpty.style.display = 'none';
+
+      const cards = [
+        {
+          title: 'All ProjectIds found in both reports?',
+          value: overview.allProjectIdsFoundInBoth ? 'Yes' : 'No',
+          kind: overview.allProjectIdsFoundInBoth ? 'good' : 'bad'
+        },
+        { title: 'Matching ProjectIds', value: String(overview.matchingProjectIds), kind: '' },
+        { title: 'ProjectIds missing in Old Report', value: String(overview.missingInOld), kind: overview.missingInOld === 0 ? 'good' : 'bad' },
+        { title: 'ProjectIds missing in New Report', value: String(overview.missingInNew), kind: overview.missingInNew === 0 ? 'good' : 'bad' },
+        ...COST_COLUMNS.map(col => ({
+          title: `Total ${col} diffs`,
+          value: String(overview.diffCountByColumn[col]),
+          kind: overview.diffCountByColumn[col] === 0 ? 'good' : 'bad'
+        }))
+      ];
+
+      cards.forEach(card => {
+        const el = document.createElement('article');
+        el.className = `overview-card ${card.kind}`.trim();
+
+        const title = document.createElement('h4');
+        title.textContent = card.title;
+
+        const metric = document.createElement('p');
+        metric.className = 'metric';
+        metric.textContent = card.value;
+
+        el.appendChild(title);
+        el.appendChild(metric);
+        overviewGrid.appendChild(el);
+      });
+    };
+
+    const renderDiffTable = () => {
+      const headers = state.exportHeaders;
+      const rows = state.filter === 'diffs'
+        ? state.diffRows.filter(row => row['Diff Found'] === 'Yes')
+        : state.diffRows;
+
+      diffHead.innerHTML = '';
+      diffBody.innerHTML = '';
+
+      const hr = document.createElement('tr');
+      headers.forEach(h => {
+        const th = document.createElement('th');
+        th.textContent = h;
+        hr.appendChild(th);
+      });
+      diffHead.appendChild(hr);
+
+      rows.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.className = row['Diff Found'] === 'Yes' ? 'diff-row' : 'match-row';
+        headers.forEach(h => {
+          const td = document.createElement('td');
+          td.textContent = formatCell(row[h]);
+          tr.appendChild(td);
+        });
+        diffBody.appendChild(tr);
+      });
+    };
+
+    const renderPresenceTable = () => {
+      const headers = ['ProjectId', 'Presence'];
+      presenceHead.innerHTML = '';
+      presenceBody.innerHTML = '';
+
+      const hr = document.createElement('tr');
+      headers.forEach(h => {
+        const th = document.createElement('th');
+        th.textContent = h;
+        hr.appendChild(th);
+      });
+      presenceHead.appendChild(hr);
+
+      if (!state.presenceRows.length) {
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = 2;
+        td.textContent = 'No ProjectId presence mismatches. All ProjectIds were found in both reports.';
+        tr.appendChild(td);
+        presenceBody.appendChild(tr);
+        return;
+      }
+
+      state.presenceRows.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.className = 'presence-row';
+        headers.forEach(h => {
+          const td = document.createElement('td');
+          td.textContent = row[h];
+          tr.appendChild(td);
+        });
+        presenceBody.appendChild(tr);
+      });
+    };
+
+    const exportRows = () => state.diffRows.map(row => {
+      const out = {};
+      state.exportHeaders.forEach(h => { out[h] = row[h] ?? ''; });
+      return out;
+    });
+
+    const downloadCsv = () => {
+      const ws = XLSX.utils.json_to_sheet(exportRows());
+      const csv = XLSX.utils.sheet_to_csv(ws);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `project-summary-3-diff-${Date.now()}.csv`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    };
+
+    const downloadXlsx = () => {
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(exportRows());
+      XLSX.utils.book_append_sheet(wb, ws, 'Diff Report');
+      XLSX.writeFile(wb, `project-summary-3-diff-${Date.now()}.xlsx`);
+    };
+
+    const setFile = (type, file) => {
+      if (!file) return;
+      if (!/\.(xlsx|xls)$/i.test(file.name)) {
+        setSummary('Only .xlsx/.xls files are supported.', 'warn');
+        return;
+      }
+      if (type === 'old') {
+        state.oldFile = file;
+        oldStatus.textContent = file.name;
+      } else {
+        state.newFile = file;
+        newStatus.textContent = file.name;
+      }
+      runDiffBtn.disabled = !(state.oldFile && state.newFile);
+      setSummary('Files loaded. Ready to generate diff report.', 'good');
+    };
+
+    const wireDropZone = (zoneId, inputId, type) => {
+      const zone = document.getElementById(zoneId);
+      const input = document.getElementById(inputId);
+
+      zone.addEventListener('dragover', event => {
+        event.preventDefault();
+        zone.classList.add('dragover');
+      });
+
+      zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+
+      zone.addEventListener('drop', event => {
+        event.preventDefault();
+        zone.classList.remove('dragover');
+        setFile(type, event.dataTransfer.files[0]);
+      });
+
+      input.addEventListener('change', event => setFile(type, event.target.files[0]));
+    };
+
+    runDiffBtn.addEventListener('click', async () => {
+      try {
+        runDiffBtn.disabled = true;
+        setSummary('Parsing reports...', '');
+
+        const [oldRows, newRows] = await Promise.all([
+          readWorkbookRows(state.oldFile),
+          readWorkbookRows(state.newFile)
+        ]);
+
+        const { diffRows, presenceRows, overview, exportHeaders } = buildDataModel(oldRows, newRows);
+        state.diffRows = diffRows;
+        state.presenceRows = presenceRows;
+        state.overview = overview;
+        state.exportHeaders = exportHeaders;
+
+        renderOverview(overview);
+        renderDiffTable();
+        renderPresenceTable();
+
+        const tdTotalCostDiffs = overview.diffCountByColumn['TD Total Cost'];
+        setSummary(`Report ready. Matching ProjectIds: ${overview.matchingProjectIds}. TD Total Cost diffs: ${tdTotalCostDiffs}.`, tdTotalCostDiffs === 0 ? 'good' : 'warn');
+
+        downloadCsvBtn.disabled = false;
+        downloadXlsxBtn.disabled = false;
+      } catch (error) {
+        setSummary(error.message || 'Unable to build diff report.', 'warn');
+      } finally {
+        runDiffBtn.disabled = !(state.oldFile && state.newFile);
+      }
+    });
+
+    downloadCsvBtn.addEventListener('click', downloadCsv);
+    downloadXlsxBtn.addEventListener('click', downloadXlsx);
+
+    tabData.addEventListener('click', () => {
+      tabData.classList.add('active');
+      tabPresence.classList.remove('active');
+      panelData.classList.remove('hidden');
+      panelPresence.classList.add('hidden');
+    });
+
+    tabPresence.addEventListener('click', () => {
+      tabPresence.classList.add('active');
+      tabData.classList.remove('active');
+      panelPresence.classList.remove('hidden');
+      panelData.classList.add('hidden');
+    });
+
+    filterAll.addEventListener('click', () => {
+      state.filter = 'all';
+      filterAll.classList.add('active');
+      filterDiffsOnly.classList.remove('active');
+      renderDiffTable();
+    });
+
+    filterDiffsOnly.addEventListener('click', () => {
+      state.filter = 'diffs';
+      filterDiffsOnly.classList.add('active');
+      filterAll.classList.remove('active');
+      renderDiffTable();
+    });
+
+    wireDropZone('old-zone', 'old-file', 'old');
+    wireDropZone('new-zone', 'new-file', 'new');
+  </script>
+</body>
+</html>

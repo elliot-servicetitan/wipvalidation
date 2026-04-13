@@ -1,0 +1,914 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Consumption Validator — ServiceTitan WIP Tools</title>
+  <style>
+    :root {
+      --bg: #f3f6fb;
+      --panel: #fff;
+      --text: #1f2937;
+      --muted: #64748b;
+      --border: #cbd5e1;
+      --accent: #2563eb;
+      --good-bg: #ecfdf5;
+      --good-border: #a7f3d0;
+      --good-text: #065f46;
+      --warn-bg: #fff7ed;
+      --warn-border: #fdba74;
+      --warn-text: #9a3412;
+      --bad-bg: #fef2f2;
+      --bad-border: #fecaca;
+      --bad-text: #991b1b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .topbar {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .topbar a {
+      font-size: 0.88rem;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .topbar a:hover { text-decoration: underline; }
+    .topbar-divider { color: var(--border); }
+    .topbar-title { font-size: 0.88rem; color: var(--muted); }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    h1, h2, h3, h4 { margin: 0; }
+    p { margin: 0; color: var(--muted); }
+
+    .upload-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+    }
+
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+      background: #f8fafc;
+      cursor: pointer;
+      transition: 0.2s ease;
+      display: block;
+    }
+
+    .drop-zone.dragover {
+      border-color: var(--accent);
+      background: #eff6ff;
+    }
+
+    .drop-zone input { display: none; }
+
+    .drop-zone h3 { font-size: 1rem; margin-bottom: 4px; }
+    .drop-zone .hint { font-size: 0.8rem; color: var(--muted); }
+    .drop-zone .cols { font-size: 0.75rem; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+
+    .file-status {
+      margin-top: 8px;
+      font-size: 0.85rem;
+      word-break: break-all;
+      font-weight: 500;
+      color: var(--accent);
+    }
+
+    .file-status.none { color: var(--muted); font-weight: 400; }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    button {
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      border-radius: 8px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    button.active { background: #e2e8f0; }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .pill {
+      display: inline-flex;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .pill.good { background: var(--good-bg); border-color: var(--good-border); color: var(--good-text); }
+    .pill.warn { background: var(--warn-bg); border-color: var(--warn-border); color: var(--warn-text); }
+    .pill.bad  { background: var(--bad-bg);  border-color: var(--bad-border);  color: var(--bad-text); }
+
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .overview-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      background: #f8fafc;
+    }
+
+    .overview-card.good { background: var(--good-bg); border-color: var(--good-border); }
+    .overview-card.bad  { background: var(--bad-bg);  border-color: var(--bad-border); }
+    .overview-card.warn { background: var(--warn-bg); border-color: var(--warn-border); }
+
+    .overview-card h4 { font-size: 0.85rem; color: var(--muted); margin-bottom: 6px; }
+    .overview-card .metric { font-size: 1.25rem; font-weight: 700; }
+    .overview-card.good .metric { color: var(--good-text); }
+    .overview-card.bad  .metric { color: var(--bad-text); }
+    .overview-card.warn .metric { color: var(--warn-text); }
+
+    .summary-box {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .summary-box.good { background: var(--good-bg); border: 1px solid var(--good-border); color: var(--good-text); }
+    .summary-box.bad  { background: var(--bad-bg);  border: 1px solid var(--bad-border);  color: var(--bad-text); }
+
+    .detail-list {
+      margin: 8px 0 0;
+      padding-left: 20px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .panel.hidden { display: none; }
+
+    .filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      max-height: 70vh;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    th, td {
+      border-right: 1px solid #e2e8f0;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 8px 10px;
+      font-size: 0.84rem;
+      text-align: left;
+      vertical-align: top;
+      white-space: nowrap;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: #f8fafc;
+      z-index: 2;
+      font-weight: 600;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-match          { background: var(--good-bg); color: var(--good-text); border: 1px solid var(--good-border); }
+    .status-mismatch       { background: var(--bad-bg);  color: var(--bad-text);  border: 1px solid var(--bad-border); }
+    .status-missing_bills  { background: var(--warn-bg); color: var(--warn-text); border: 1px solid var(--warn-border); }
+    .status-missing_invoice{ background: var(--warn-bg); color: var(--warn-text); border: 1px solid var(--warn-border); }
+
+    tr.row-mismatch { background: #fef2f2; }
+    tr.row-missing  { background: #fff7ed; }
+    tr.row-match    { background: #f8fafc; }
+
+    .issues-cell {
+      white-space: normal;
+      max-width: 320px;
+      font-size: 0.78rem;
+      color: var(--bad-text);
+      line-height: 1.4;
+    }
+
+    .issues-cell.warn { color: var(--warn-text); }
+
+    .presence-section { margin-top: 12px; }
+    .presence-section h3 { font-size: 0.95rem; margin-bottom: 8px; }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tag {
+      font-size: 0.78rem;
+      padding: 3px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #f1f5f9;
+      color: var(--muted);
+    }
+
+    .empty-msg {
+      color: var(--muted);
+      font-style: italic;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <nav class="topbar">
+    <a href="../">← All Tools</a>
+    <span class="topbar-divider">/</span>
+    <span class="topbar-title">Consumption WIP Validator</span>
+  </nav>
+
+  <main class="container">
+    <section class="card">
+      <h1>Consumption WIP Validator</h1>
+      <p style="margin-top:6px">Cross-validates the WIP Drilldown against Bills and Invoice Items to verify that consumed cost = WAC × consumed quantity for each SKU.</p>
+    </section>
+
+    <section class="card upload-grid">
+      <label class="drop-zone" id="wip-zone">
+        <h3>WIP Drilldown</h3>
+        <p class="hint">Drag/drop .xlsx or click to browse</p>
+        <input type="file" id="wip-file" accept=".xlsx,.xls" />
+        <div class="cols">Required: SKU Name, Quantity, Unit Cost,<br>Consumed Quantity, WAC, Consumed Subtotal Cost, Subtotal</div>
+        <p id="wip-status" class="file-status none">No file selected.</p>
+      </label>
+
+      <label class="drop-zone" id="bills-zone">
+        <h3>Bills Report</h3>
+        <p class="hint">Drag/drop .xlsx or click to browse</p>
+        <input type="file" id="bills-file" accept=".xlsx,.xls" />
+        <div class="cols">Required: Item Code, Item Total,<br>Item Unit Cost, Quantity Billed</div>
+        <p id="bills-status" class="file-status none">No file selected.</p>
+      </label>
+
+      <label class="drop-zone" id="invoice-zone">
+        <h3>Invoice Items Report</h3>
+        <p class="hint">Drag/drop .xlsx or click to browse</p>
+        <input type="file" id="invoice-file" accept=".xlsx,.xls" />
+        <div class="cols">Required: Code, Quantity</div>
+        <p id="invoice-status" class="file-status none">No file selected.</p>
+      </label>
+    </section>
+
+    <section class="card controls">
+      <button id="run-btn" class="primary" disabled>Run Validation</button>
+      <button id="reset-btn">Reset</button>
+      <span id="summary-pill" class="pill">Upload all three files to begin</span>
+    </section>
+
+    <section class="card" id="results-section" style="display:none">
+      <h2>Validation Overview</h2>
+      <div id="overview-grid" class="overview-grid"></div>
+      <div id="summary-box" class="summary-box"></div>
+      <ul id="detail-list" class="detail-list"></ul>
+    </section>
+
+    <section class="card" id="data-section" style="display:none">
+      <div class="tabs">
+        <button id="tab-sku" class="active">SKU Validation</button>
+        <button id="tab-presence">Presence Mismatches</button>
+      </div>
+
+      <section id="panel-sku" class="panel">
+        <div class="filters">
+          <button id="filter-all" class="active">All</button>
+          <button id="filter-issues">Issues Only</button>
+          <button id="filter-match">Matches Only</button>
+        </div>
+        <div class="table-wrap">
+          <table id="sku-table"><thead></thead><tbody></tbody></table>
+        </div>
+      </section>
+
+      <section id="panel-presence" class="panel hidden">
+        <div class="presence-section">
+          <h3>SKUs only in WIP <span id="only-wip-count" class="pill"></span></h3>
+          <div id="only-wip-tags" class="tag-list"></div>
+        </div>
+        <div class="presence-section">
+          <h3>SKUs only in Bills <span id="only-bills-count" class="pill"></span></h3>
+          <div id="only-bills-tags" class="tag-list"></div>
+        </div>
+        <div class="presence-section">
+          <h3>SKUs only in Invoice Items <span id="only-invoice-count" class="pill"></span></h3>
+          <div id="only-invoice-tags" class="tag-list"></div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <script>
+    const $ = id => document.getElementById(id);
+
+    const state = {
+      wipFile: null,
+      billsFile: null,
+      invoiceFile: null,
+      result: null,
+      filter: 'all'
+    };
+
+    const toNum = val => {
+      if (typeof val === 'number') return val;
+      if (typeof val === 'string') {
+        const n = parseFloat(val.replace(/[,$\s]/g, ''));
+        return isNaN(n) ? 0 : n;
+      }
+      return 0;
+    };
+
+    const toStr = val => (val === null || val === undefined) ? '' : String(val).trim();
+
+    const fmt$ = n => (n === null || n === undefined) ? '—' : '$' + n.toFixed(4);
+    const fmtN = n => (n === null || n === undefined) ? '—' : n.toFixed(4);
+
+    const getSummaryPill = () => $('summary-pill');
+    const setPill = (text, kind = '') => {
+      const p = getSummaryPill();
+      p.textContent = text;
+      p.className = `pill ${kind}`.trim();
+    };
+
+    const normalizeHeader = h => toStr(h).toLowerCase().replace(/\s+/g, ' ');
+
+    const readSheet = async file => {
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: 'array', cellDates: false });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+      const headers = [];
+      for (let c = range.s.c; c <= range.e.c; c++) {
+        const cell = ws[XLSX.utils.encode_cell({ r: range.s.r, c })];
+        headers.push(cell ? toStr(cell.v) : '');
+      }
+      return { rows: XLSX.utils.sheet_to_json(ws, { defval: null }), headers };
+    };
+
+    const validateHeaders = (headers, required, reportName) => {
+      const lower = headers.map(normalizeHeader);
+      const missing = required.filter(r => !lower.includes(normalizeHeader(r)));
+      if (missing.length) throw new Error(`${reportName}: Missing columns: ${missing.join(', ')}`);
+    };
+
+    const parseWip = async file => {
+      const { rows, headers } = await readSheet(file);
+      validateHeaders(headers, ['SKU Name', 'Quantity', 'Unit Cost', 'Consumed Quantity', 'WAC', 'Consumed Subtotal Cost'], 'WIP Drilldown');
+      return rows
+        .filter(r => toStr(r['SKU Name']) !== '')
+        .map(r => ({
+          skuName:              toStr(r['SKU Name']),
+          quantity:             toNum(r['Quantity']),
+          unitCost:             toNum(r['Unit Cost']),
+          subtotal:             toNum(r['Subtotal']),
+          consumedQuantity:     toNum(r['Consumed Quantity']),
+          wac:                  toNum(r['WAC']),
+          consumedSubtotalCost: toNum(r['Consumed Subtotal Cost']),
+        }));
+    };
+
+    const parseBills = async file => {
+      const { rows, headers } = await readSheet(file);
+      validateHeaders(headers, ['Item Code', 'Item Total', 'Item Unit Cost', 'Quantity Billed'], 'Bills Report');
+      return rows
+        .filter(r => toStr(r['Item Code']) !== '')
+        .map(r => ({
+          itemCode:      toStr(r['Item Code']),
+          itemTotal:     toNum(r['Item Total']),
+          itemUnitCost:  toNum(r['Item Unit Cost']),
+          quantityBilled:toNum(r['Quantity Billed']),
+        }));
+    };
+
+    const parseInvoice = async file => {
+      const { rows, headers } = await readSheet(file);
+      validateHeaders(headers, ['Code', 'Quantity'], 'Invoice Items Report');
+      return rows
+        .filter(r => toStr(r['Code']) !== '')
+        .map(r => ({
+          code:     toStr(r['Code']),
+          quantity: toNum(r['Quantity']),
+        }));
+    };
+
+    const runValidation = (wipRows, billRows, invoiceRows) => {
+      const wipBySku = new Map();
+      for (const row of wipRows) {
+        const sku = row.skuName;
+        const ex = wipBySku.get(sku);
+        if (ex) {
+          ex.totalConsumedCost += row.consumedSubtotalCost;
+          ex.totalConsumedQty  += row.consumedQuantity;
+          ex.totalBilledCost   += row.subtotal;
+          ex.totalBilledQty    += row.quantity;
+          ex.wacs.push(row.wac);
+        } else {
+          wipBySku.set(sku, {
+            totalConsumedCost: row.consumedSubtotalCost,
+            totalConsumedQty:  row.consumedQuantity,
+            totalBilledCost:   row.subtotal,
+            totalBilledQty:    row.quantity,
+            wacs: [row.wac],
+          });
+        }
+      }
+
+      const billsBySku = new Map();
+      for (const row of billRows) {
+        const sku = row.itemCode;
+        const ex = billsBySku.get(sku);
+        if (ex) {
+          ex.totalAmount += row.itemTotal;
+          ex.totalQty    += row.quantityBilled;
+        } else {
+          billsBySku.set(sku, { totalAmount: row.itemTotal, totalQty: row.quantityBilled });
+        }
+      }
+
+      const invoiceBySku = new Map();
+      for (const row of invoiceRows) {
+        const sku = row.code;
+        const ex = invoiceBySku.get(sku);
+        if (ex) ex.totalQty += row.quantity;
+        else invoiceBySku.set(sku, { totalQty: row.quantity });
+      }
+
+      const allSkus = new Set([...wipBySku.keys(), ...billsBySku.keys(), ...invoiceBySku.keys()]);
+
+      const skuValidations = [];
+      const skusOnlyInWip = [];
+      const skusOnlyInBills = [];
+      const skusOnlyInInvoice = [];
+      let wipTotal = 0;
+      let calculatedTotal = 0;
+      let incompleteDataSkuCount = 0;
+
+      for (const sku of allSkus) {
+        const wipData     = wipBySku.get(sku);
+        const billData    = billsBySku.get(sku);
+        const invoiceData = invoiceBySku.get(sku);
+
+        if (wipData && !billData && !invoiceData) skusOnlyInWip.push(sku);
+        if (!wipData && billData && !invoiceData) skusOnlyInBills.push(sku);
+        if (!wipData && !billData && invoiceData) skusOnlyInInvoice.push(sku);
+
+        if (!wipData) continue;
+
+        const wipConsumedCost = wipData.totalConsumedCost;
+        const wipConsumedQty  = wipData.totalConsumedQty;
+        const wipWac = wipData.totalBilledQty > 0
+          ? wipData.totalBilledCost / wipData.totalBilledQty
+          : wipData.wacs[0];
+
+        const issues = [];
+        const warnings = [];
+        let calculatedWac = null;
+        let invoiceQtyConsumed = null;
+        let calculatedConsumedCost = null;
+        let costDifference = null;
+        let billsTotalQty = null;
+        let billsTotalAmount = null;
+        let status = 'match';
+
+        const uniqueWacs = [...new Set(wipData.wacs.map(w => w.toFixed(6)))];
+        if (uniqueWacs.length > 1) {
+          warnings.push(`WIP has ${uniqueWacs.length} different WAC values across rows: ${uniqueWacs.map(w => '$' + parseFloat(w).toFixed(4)).join(', ')}`);
+        }
+
+        if (!billData) {
+          issues.push(`SKU not found in Bills report — excluded from TD Vendor Bill Cost calculation (cannot calculate WAC without bill data)`);
+          status = 'missing_bills';
+        } else {
+          billsTotalQty    = billData.totalQty;
+          billsTotalAmount = billData.totalAmount;
+          calculatedWac = billsTotalQty > 0 ? billsTotalAmount / billsTotalQty : 0;
+          const wacDiff = Math.abs(calculatedWac - wipWac);
+          if (wacDiff > 0.005) {
+            issues.push(`WAC mismatch: WIP shows $${wipWac.toFixed(4)} but Bills calculates $${calculatedWac.toFixed(4)} (diff: $${wacDiff.toFixed(4)})`);
+          }
+        }
+
+        if (!invoiceData) {
+          issues.push(`SKU not found in Invoice Items report — cannot verify QTY consumed`);
+          if (status !== 'missing_bills') status = 'missing_invoice';
+        } else {
+          invoiceQtyConsumed = invoiceData.totalQty;
+          const qtyDiff = Math.abs(invoiceQtyConsumed - wipConsumedQty);
+          if (qtyDiff > 0.005) {
+            warnings.push(`QTY consumed mismatch: WIP shows ${wipConsumedQty} but Invoice Items shows ${invoiceQtyConsumed} (diff: ${qtyDiff.toFixed(4)})`);
+          }
+        }
+
+        if (calculatedWac !== null && invoiceQtyConsumed !== null && billsTotalQty !== null) {
+          if (invoiceQtyConsumed > billsTotalQty) {
+            warnings.push(`Invoice QTY (${invoiceQtyConsumed}) exceeds Bills QTY (${billsTotalQty}) — capping consumed QTY at billed QTY for cost calculation`);
+            invoiceQtyConsumed = billsTotalQty;
+          }
+          calculatedConsumedCost = calculatedWac * invoiceQtyConsumed;
+          wipTotal        += wipConsumedCost;
+          calculatedTotal += calculatedConsumedCost;
+          costDifference   = wipConsumedCost - calculatedConsumedCost;
+          if (Math.abs(costDifference) > 0.005) {
+            issues.push(`Consumed cost mismatch: WIP shows $${wipConsumedCost.toFixed(4)} but calculated (WAC × QTY) = $${calculatedConsumedCost.toFixed(4)} (diff: $${costDifference.toFixed(4)})`);
+            status = 'mismatch';
+          }
+        } else {
+          incompleteDataSkuCount++;
+        }
+
+        const allIssues = [...issues, ...warnings];
+        if (status === 'match' && issues.length > 0) status = 'mismatch';
+
+        skuValidations.push({
+          sku,
+          wipConsumedQty,
+          wipWac,
+          wipConsumedCost,
+          calculatedWac,
+          invoiceQtyConsumed,
+          calculatedConsumedCost,
+          costDifference,
+          billsTotalQty,
+          billsTotalAmount,
+          issues: allIssues,
+          status,
+        });
+      }
+
+      const statusOrder = { mismatch: 0, missing_bills: 1, missing_invoice: 2, match: 3 };
+      skuValidations.sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
+
+      const totalDifference = wipTotal - calculatedTotal;
+      const hasIssues = skuValidations.some(v => v.status !== 'match') || Math.abs(totalDifference) > 0.01;
+
+      const mismatchCount      = skuValidations.filter(v => v.status === 'mismatch').length;
+      const missingBillsCount  = skuValidations.filter(v => v.status === 'missing_bills').length;
+      const missingInvoiceCount= skuValidations.filter(v => v.status === 'missing_invoice').length;
+      const matchCount         = skuValidations.filter(v => v.status === 'match').length;
+
+      const details = [];
+      if (mismatchCount > 0)      details.push(`${mismatchCount} SKU(s) have cost calculation mismatches`);
+      if (missingBillsCount > 0)  details.push(`${missingBillsCount} SKU(s) in WIP not found in Bills report`);
+      if (missingInvoiceCount > 0)details.push(`${missingInvoiceCount} SKU(s) in WIP not found in Invoice Items report`);
+      if (skusOnlyInWip.length)   details.push(`${skusOnlyInWip.length} SKU(s) appear only in WIP`);
+      if (skusOnlyInBills.length) details.push(`${skusOnlyInBills.length} SKU(s) appear only in Bills`);
+      if (skusOnlyInInvoice.length)details.push(`${skusOnlyInInvoice.length} SKU(s) appear only in Invoice Items`);
+      details.push(`${matchCount} SKU(s) validated successfully`);
+
+      let summary;
+      if (!hasIssues) {
+        summary = `Validation passed. The WIP TD Vendor Bill Cost total of $${wipTotal.toFixed(2)} matches the independently calculated total of $${calculatedTotal.toFixed(2)}. All ${matchCount} SKUs have correct WAC and QTY consumed values.`;
+      } else {
+        const noteIncomplete = incompleteDataSkuCount > 0
+          ? ` Note: ${incompleteDataSkuCount} SKU(s) had incomplete data and were excluded from totals.`
+          : '';
+        summary = `Validation failed. WIP total: $${wipTotal.toFixed(2)}, calculated total: $${calculatedTotal.toFixed(2)} (difference: $${Math.abs(totalDifference).toFixed(2)}).${noteIncomplete}`;
+      }
+
+      return {
+        overallStatus: hasIssues ? 'fail' : 'pass',
+        summary,
+        details,
+        wipTotal,
+        calculatedTotal,
+        totalDifference,
+        skuValidations,
+        skusOnlyInWip,
+        skusOnlyInBills,
+        skusOnlyInInvoice,
+        matchCount,
+        mismatchCount,
+        missingBillsCount,
+        missingInvoiceCount,
+      };
+    };
+
+    const renderResults = result => {
+      $('results-section').style.display = '';
+      $('data-section').style.display = '';
+
+      const og = $('overview-grid');
+      og.innerHTML = '';
+
+      const cards = [
+        { title: 'Overall Status', value: result.overallStatus === 'pass' ? 'PASS' : 'FAIL', kind: result.overallStatus === 'pass' ? 'good' : 'bad' },
+        { title: 'WIP Total Cost', value: '$' + result.wipTotal.toFixed(2), kind: '' },
+        { title: 'Calculated Total Cost', value: '$' + result.calculatedTotal.toFixed(2), kind: '' },
+        { title: 'Total Difference', value: '$' + Math.abs(result.totalDifference).toFixed(2), kind: Math.abs(result.totalDifference) <= 0.01 ? 'good' : 'bad' },
+        { title: 'SKUs Matched', value: String(result.matchCount), kind: 'good' },
+        { title: 'Cost Mismatches', value: String(result.mismatchCount), kind: result.mismatchCount === 0 ? 'good' : 'bad' },
+        { title: 'Missing from Bills', value: String(result.missingBillsCount), kind: result.missingBillsCount === 0 ? 'good' : 'warn' },
+        { title: 'Missing from Invoice Items', value: String(result.missingInvoiceCount), kind: result.missingInvoiceCount === 0 ? 'good' : 'warn' },
+      ];
+
+      cards.forEach(c => {
+        const el = document.createElement('article');
+        el.className = `overview-card ${c.kind}`.trim();
+        el.innerHTML = `<h4>${c.title}</h4><p class="metric">${c.value}</p>`;
+        og.appendChild(el);
+      });
+
+      const sb = $('summary-box');
+      sb.className = `summary-box ${result.overallStatus === 'pass' ? 'good' : 'bad'}`;
+      sb.textContent = result.summary;
+
+      const dl = $('detail-list');
+      dl.innerHTML = '';
+      result.details.forEach(d => {
+        const li = document.createElement('li');
+        li.textContent = d;
+        dl.appendChild(li);
+      });
+
+      renderSkuTable();
+      renderPresence();
+    };
+
+    const skuStatusLabel = {
+      match:           'Match',
+      mismatch:        'Mismatch',
+      missing_bills:   'No Bills',
+      missing_invoice: 'No Invoice',
+    };
+
+    const renderSkuTable = () => {
+      if (!state.result) return;
+      const all = state.result.skuValidations;
+      const rows = state.filter === 'issues'
+        ? all.filter(r => r.status !== 'match')
+        : state.filter === 'match'
+          ? all.filter(r => r.status === 'match')
+          : all;
+
+      const thead = document.querySelector('#sku-table thead');
+      const tbody = document.querySelector('#sku-table tbody');
+      thead.innerHTML = '';
+      tbody.innerHTML = '';
+
+      const headers = ['SKU', 'Status', 'WIP Consumed Qty', 'WIP WAC', 'WIP Consumed Cost', 'Bills WAC', 'Bills Total Qty', 'Bills Total Amt', 'Invoice Qty', 'Calc. Consumed Cost', 'Cost Difference', 'Issues / Warnings'];
+      const hr = document.createElement('tr');
+      headers.forEach(h => {
+        const th = document.createElement('th');
+        th.textContent = h;
+        hr.appendChild(th);
+      });
+      thead.appendChild(hr);
+
+      rows.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.className = row.status === 'match' ? 'row-match' : row.status === 'mismatch' ? 'row-mismatch' : 'row-missing';
+
+        const cells = [
+          row.sku,
+          `<span class="status-badge status-${row.status}">${skuStatusLabel[row.status]}</span>`,
+          fmtN(row.wipConsumedQty),
+          fmt$(row.wipWac),
+          fmt$(row.wipConsumedCost),
+          fmt$(row.calculatedWac),
+          fmtN(row.billsTotalQty),
+          fmt$(row.billsTotalAmount),
+          fmtN(row.invoiceQtyConsumed),
+          fmt$(row.calculatedConsumedCost),
+          row.costDifference !== null ? fmt$(row.costDifference) : '—',
+          '',
+        ];
+
+        cells.forEach((c, i) => {
+          const td = document.createElement('td');
+          if (i === 1) {
+            td.innerHTML = c;
+          } else if (i === cells.length - 1) {
+            td.className = row.status === 'mismatch' ? 'issues-cell' : 'issues-cell warn';
+            td.textContent = row.issues.join(' | ');
+          } else {
+            td.textContent = c;
+          }
+          tr.appendChild(td);
+        });
+
+        tbody.appendChild(tr);
+      });
+    };
+
+    const renderPresence = () => {
+      if (!state.result) return;
+      const r = state.result;
+
+      const renderGroup = (containerId, countId, skus) => {
+        $(`${countId}`).textContent = skus.length;
+        const container = $(containerId);
+        container.innerHTML = '';
+        if (!skus.length) {
+          container.innerHTML = '<span style="color:var(--muted);font-size:0.85rem;font-style:italic">None</span>';
+          return;
+        }
+        skus.forEach(sku => {
+          const span = document.createElement('span');
+          span.className = 'tag';
+          span.textContent = sku;
+          container.appendChild(span);
+        });
+      };
+
+      renderGroup('only-wip-tags',     'only-wip-count',     r.skusOnlyInWip);
+      renderGroup('only-bills-tags',   'only-bills-count',   r.skusOnlyInBills);
+      renderGroup('only-invoice-tags', 'only-invoice-count', r.skusOnlyInInvoice);
+    };
+
+    const checkReady = () => {
+      const ready = state.wipFile && state.billsFile && state.invoiceFile;
+      $('run-btn').disabled = !ready;
+      if (ready) setPill('All files loaded. Ready to validate.', 'good');
+    };
+
+    const setFile = (key, statusId, file) => {
+      if (!file) return;
+      if (!/\.(xlsx|xls)$/i.test(file.name)) {
+        setPill('Only .xlsx/.xls files are supported.', 'warn');
+        return;
+      }
+      state[key] = file;
+      const el = $(statusId);
+      el.textContent = file.name;
+      el.className = 'file-status';
+      checkReady();
+    };
+
+    const wireZone = (zoneId, inputId, key, statusId) => {
+      const zone = $(zoneId);
+      const input = $(inputId);
+      zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+      zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+      zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('dragover'); setFile(key, statusId, e.dataTransfer.files[0]); });
+      input.addEventListener('change', e => setFile(key, statusId, e.target.files[0]));
+    };
+
+    $('run-btn').addEventListener('click', async () => {
+      try {
+        $('run-btn').disabled = true;
+        setPill('Parsing files…', '');
+
+        const [wipRows, billRows, invoiceRows] = await Promise.all([
+          parseWip(state.wipFile),
+          parseBills(state.billsFile),
+          parseInvoice(state.invoiceFile),
+        ]);
+
+        state.result = runValidation(wipRows, billRows, invoiceRows);
+        renderResults(state.result);
+
+        const r = state.result;
+        setPill(
+          `Validation ${r.overallStatus === 'pass' ? 'passed' : 'failed'}. ${r.matchCount} matched, ${r.mismatchCount} mismatches, ${r.missingBillsCount + r.missingInvoiceCount} missing.`,
+          r.overallStatus === 'pass' ? 'good' : 'bad'
+        );
+      } catch (err) {
+        setPill(err.message || 'Error parsing files.', 'warn');
+      } finally {
+        $('run-btn').disabled = !(state.wipFile && state.billsFile && state.invoiceFile);
+      }
+    });
+
+    $('reset-btn').addEventListener('click', () => {
+      state.wipFile = state.billsFile = state.invoiceFile = state.result = null;
+      state.filter = 'all';
+      ['wip-status', 'bills-status', 'invoice-status'].forEach(id => {
+        const el = $(id);
+        el.textContent = 'No file selected.';
+        el.className = 'file-status none';
+      });
+      ['wip-file', 'bills-file', 'invoice-file'].forEach(id => { $(id).value = ''; });
+      $('run-btn').disabled = true;
+      $('results-section').style.display = 'none';
+      $('data-section').style.display = 'none';
+      setPill('Upload all three files to begin', '');
+    });
+
+    $('tab-sku').addEventListener('click', () => {
+      $('tab-sku').classList.add('active');
+      $('tab-presence').classList.remove('active');
+      $('panel-sku').classList.remove('hidden');
+      $('panel-presence').classList.add('hidden');
+    });
+
+    $('tab-presence').addEventListener('click', () => {
+      $('tab-presence').classList.add('active');
+      $('tab-sku').classList.remove('active');
+      $('panel-presence').classList.remove('hidden');
+      $('panel-sku').classList.add('hidden');
+    });
+
+    $('filter-all').addEventListener('click', () => {
+      state.filter = 'all';
+      $('filter-all').classList.add('active');
+      $('filter-issues').classList.remove('active');
+      $('filter-match').classList.remove('active');
+      renderSkuTable();
+    });
+
+    $('filter-issues').addEventListener('click', () => {
+      state.filter = 'issues';
+      $('filter-issues').classList.add('active');
+      $('filter-all').classList.remove('active');
+      $('filter-match').classList.remove('active');
+      renderSkuTable();
+    });
+
+    $('filter-match').addEventListener('click', () => {
+      state.filter = 'match';
+      $('filter-match').classList.add('active');
+      $('filter-all').classList.remove('active');
+      $('filter-issues').classList.remove('active');
+      renderSkuTable();
+    });
+
+    wireZone('wip-zone',     'wip-file',     'wipFile',     'wip-status');
+    wireZone('bills-zone',   'bills-file',   'billsFile',   'bills-status');
+    wireZone('invoice-zone', 'invoice-file', 'invoiceFile', 'invoice-status');
+  </script>
+</body>
+</html>
