@@ -4,116 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Budget Code Diff — ServiceTitan WIP Tools</title>
-  <style>
-    :root {
-      --bg: #f3f6fb;
-      --panel: #fff;
-      --text: #1f2937;
-      --muted: #64748b;
-      --border: #cbd5e1;
-      --accent: #2563eb;
-    }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
-
-    .topbar {
-      background: var(--panel);
-      border-bottom: 1px solid var(--border);
-      padding: 12px 24px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .topbar a {
-      font-size: 0.88rem;
-      color: var(--accent);
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    .topbar a:hover { text-decoration: underline; }
-
-    .topbar-divider { color: var(--border); }
-
-    .topbar-title {
-      font-size: 0.88rem;
-      color: var(--muted);
-    }
-
-    .container {
-      max-width: 700px;
-      margin: 80px auto;
-      padding: 0 24px;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .icon {
-      font-size: 3rem;
-      margin-bottom: 8px;
-    }
-
-    h1 {
-      font-size: 1.6rem;
-      font-weight: 800;
-      margin: 0;
-    }
-
-    p {
-      color: var(--muted);
-      font-size: 1rem;
-      line-height: 1.6;
-      margin: 0;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      font-size: 0.8rem;
-      font-weight: 600;
-      padding: 4px 14px;
-      border-radius: 999px;
-      background: #fff7ed;
-      color: #9a3412;
-      border: 1px solid #fdba74;
-    }
-
-    .back-link {
-      margin-top: 8px;
-      font-size: 0.9rem;
-      color: var(--accent);
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    .back-link:hover { text-decoration: underline; }
-  </style>
+  <link rel="stylesheet" href="../assets/styles.css" />
 </head>
 <body>
   <nav class="topbar">
     <a href="../">← All Tools</a>
-    <span class="topbar-divider">/</span>
+    <span class="topbar-divider" aria-hidden="true">/</span>
     <span class="topbar-title">Budget Code Diff</span>
   </nav>
 
-  <div class="container">
-    <div class="icon">🗂️</div>
+  <main class="placeholder">
+    <div class="icon" aria-hidden="true">🗂️</div>
     <h1>Budget Code Diff</h1>
-    <span class="badge">Coming Soon</span>
+    <span class="badge soon">Coming Soon</span>
     <p>This tool is being set up. Once the column structure of the Budget Code WIP report is provided, this diff tool will work just like the Project Summary 3 one.</p>
-    <a class="back-link" href="/">← Back to all tools</a>
-  </div>
+    <a class="arrow" href="../">← Back to all tools</a>
+  </main>
 </body>
 </html>

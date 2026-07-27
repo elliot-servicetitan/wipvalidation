@@ -4,164 +4,38 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ServiceTitan WIP Report Diff Tools</title>
-  <style>
-    :root {
-      --bg: #f3f6fb;
-      --panel: #fff;
-      --text: #1f2937;
-      --muted: #64748b;
-      --border: #cbd5e1;
-      --accent: #2563eb;
-    }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 32px 24px;
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 40px;
-    }
-
-    .header h1 {
-      font-size: 2rem;
-      font-weight: 800;
-      margin: 0 0 8px;
-    }
-
-    .header p {
-      font-size: 1rem;
-      color: var(--muted);
-      margin: 0;
-    }
-
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
-      width: 100%;
-      max-width: 960px;
-    }
-
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 28px 24px;
-      text-decoration: none;
-      color: inherit;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
-    }
-
-    .card:not(.disabled):hover {
-      box-shadow: 0 8px 32px rgba(37, 99, 235, 0.12);
-      transform: translateY(-2px);
-      border-color: var(--accent);
-    }
-
-    .card.disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
-      pointer-events: none;
-    }
-
-    .card-icon {
-      width: 44px;
-      height: 44px;
-      background: #eff6ff;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.4rem;
-    }
-
-    .card h2 {
-      font-size: 1.15rem;
-      font-weight: 700;
-      margin: 0;
-    }
-
-    .card p {
-      font-size: 0.9rem;
-      color: var(--muted);
-      margin: 0;
-      line-height: 1.5;
-      flex: 1;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 3px 10px;
-      border-radius: 999px;
-      width: fit-content;
-    }
-
-    .badge.ready {
-      background: #ecfdf5;
-      color: #065f46;
-      border: 1px solid #a7f3d0;
-    }
-
-    .badge.soon {
-      background: #fff7ed;
-      color: #9a3412;
-      border: 1px solid #fdba74;
-    }
-
-    .arrow {
-      color: var(--accent);
-      font-size: 0.95rem;
-      font-weight: 600;
-    }
-  </style>
+  <meta name="description" content="Browser-based tools for comparing and validating ServiceTitan WIP report exports. Files never leave your machine." />
+  <link rel="stylesheet" href="assets/styles.css" />
 </head>
-<body>
-  <div class="header">
+<body class="landing">
+  <header class="header">
     <h1>ServiceTitan WIP Report Diff Tools</h1>
-    <p>Select a report type to compare two exported Excel files and identify cost differences.</p>
-  </div>
+    <p>Compare and validate exported WIP reports. Everything runs in your browser — no file is uploaded anywhere.</p>
+  </header>
 
-  <div class="cards">
-    <a class="card" href="project-summary-3/">
-      <div class="card-icon">📊</div>
+  <main class="cards">
+    <a class="tool-card" href="project-summary-3/">
+      <div class="card-icon" aria-hidden="true">📊</div>
       <h2>Project Summary 3</h2>
-      <p>Compare two versions of the Project Summary 3 WIP report. Diffs across total cost, labor, vendor bills, burden, equipment, materials, payroll adjustments, vendor returns, invoice billed, invoice revenue, earned revenue, % complete cost, est. total cost, and contract value.</p>
+      <p>Diff two Project Summary 3 exports by ProjectId across 14 cost and revenue columns, with per-column diff counts and net change.</p>
       <span class="badge ready">Ready</span>
-      <span class="arrow">Open tool →</span>
+      <span class="arrow" aria-hidden="true">Open tool →</span>
     </a>
 
-    <a class="card" href="consumption/">
-      <div class="card-icon">📋</div>
+    <a class="tool-card" href="consumption/">
+      <div class="card-icon" aria-hidden="true">📋</div>
       <h2>Consumption</h2>
-      <p>Cross-validate the WIP Drilldown against Bills and Invoice Items reports. Verifies that consumed cost matches WAC × consumed quantity for each SKU.</p>
+      <p>Cross-validate the WIP Drilldown against Bills and Invoice Items. Verifies that consumed cost matches WAC × consumed quantity for each SKU.</p>
       <span class="badge ready">Ready</span>
-      <span class="arrow">Open tool →</span>
+      <span class="arrow" aria-hidden="true">Open tool →</span>
     </a>
 
-    <a class="card disabled">
-      <div class="card-icon">🗂️</div>
+    <div class="tool-card disabled">
+      <div class="card-icon" aria-hidden="true">🗂️</div>
       <h2>Budget Code</h2>
       <p>Compare two versions of the Budget Code WIP report across its cost columns.</p>
       <span class="badge soon">Coming soon</span>
-    </a>
-  </div>
+    </div>
+  </main>
 </body>
 </html>
