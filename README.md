@@ -64,7 +64,7 @@ Open any `index.html` directly in a browser, or serve the directory:
 python3 -m http.server 8000
 ```
 
-Run the tests (requires Node 18+, no `npm install` needed):
+Run the tests (requires Node 18+, no `npm install` needed — the suite has no dependencies):
 
 ```bash
 npm test

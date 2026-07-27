@@ -4,7 +4,8 @@
   "private": true,
   "description": "Browser-based diff and validation tools for ServiceTitan WIP report exports",
   "scripts": {
-    "test": "node --test 'tests/*.test.js'"
+    "comment:test": "No glob here — `node --test` only accepts glob patterns from Node 21 on. With no argument it recursively finds *.test.js, which works from Node 18.",
+    "test": "node --test"
   },
   "engines": {
     "node": ">=18"
